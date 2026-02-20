@@ -6,12 +6,20 @@
 
 <style>
 body{
-font-family: system-ui;
+font-family:system-ui;
+max-width:800px;
+margin:auto;
+padding:20px;
 text-align:center;
-margin:40px;
+}
+.card{
+background:#f5f5f5;
+padding:30px;
+border-radius:12px;
+margin-top:20px;
 }
 .big{
-font-size:50px;
+font-size:48px;
 color:green;
 }
 </style>
@@ -19,50 +27,46 @@ color:green;
 
 <body>
 
-<h1>🌱 Carbon Reduction</h1>
-<h3>รวมการลดคาร์บอนทั้งหมด</h3>
+<h1>🌱 Carbon Reduction Dashboard</h1>
+
+<div class="card">
+<h3>รวมการลดคาร์บอน</h3>
 <div class="big" id="total">กำลังโหลด...</div>
+</div>
 
 <script>
 
-// ⭐ Google Sheet ID ของคุณ
-const sheetID = "2PACX-1vSKUyS7phGfK5ZnkQgGVEnjobNNGaklsGgyLT3BjuF7E1Xk9av0cjH121GNOh6PTWjB5yXQIx4vVr8e";
+const sheetURL = "PASTE_CSV_LINK_HERE";
 
-const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKUyS7phGfK5ZnkQgGVEnjobNNGaklsGgyLT3BjuF7E1Xk9av0cjH121GNOh6PTWjB5yXQIx4vVr8e/pub?output=csv" ;
+async function loadData(){
 
-fetch(url)
-.then(res => res.text())
-.then(text => {
+try{
+const res = await fetch(sheetURL);
+const text = await res.text();
 
-try {
-
-// ⭐ วิธี parse ใหม่ (ไม่ใช้ substr แล้ว)
-const json = JSON.parse(
-text.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]
-);
-
-const rows = json.table.rows;
+const rows = text.trim().split("\n").slice(1);
 
 let total = 0;
 
-rows.forEach(row => {
-const value = row.c[1]?.v;
-if(value) total += Number(value);
+rows.forEach(row=>{
+const cols = row.split(",");
+const value = Number(cols[1]);
+if(!isNaN(value)) total += value;
 });
 
 document.getElementById("total").textContent =
-total.toFixed(1) + " kg CO₂";
+total.toFixed(1)+" kg CO₂";
 
-} catch(e) {
-console.error(e);
-document.getElementById("total").textContent = "โหลดข้อมูลไม่สำเร็จ";
+}catch{
+document.getElementById("total").textContent="โหลดไม่ได้";
 }
 
-})
-.catch(err => {
-console.error(err);
-document.getElementById("total").textContent = "เชื่อมต่อ Google Sheet ไม่ได้";
-});
+}
+
+loadData();
+
+// refresh ทุก 1 นาที
+setInterval(loadData,60000);
 
 </script>
 
