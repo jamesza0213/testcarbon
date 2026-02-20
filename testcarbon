@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Carbon Dashboard</title>
+
+<style>
+body{
+font-family: system-ui;
+text-align:center;
+margin:40px;
+}
+.big{
+font-size:50px;
+color:green;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🌱 Carbon Reduction</h1>
+<h3>รวมการลดคาร์บอนทั้งหมด</h3>
+<div class="big" id="total">กำลังโหลด...</div>
+
+<script>
+
+// ⭐ Google Sheet ID ของคุณ
+const sheetID = "2PACX-1vSKUyS7phGfK5ZnkQgGVEnjobNNGaklsGgyLT3BjuF7E1Xk9av0cjH121GNOh6PTWjB5yXQIx4vVr8e";
+
+const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSKUyS7phGfK5ZnkQgGVEnjobNNGaklsGgyLT3BjuF7E1Xk9av0cjH121GNOh6PTWjB5yXQIx4vVr8e/pub?output=csv" ;
+
+fetch(url)
+.then(res => res.text())
+.then(text => {
+
+try {
+
+// ⭐ วิธี parse ใหม่ (ไม่ใช้ substr แล้ว)
+const json = JSON.parse(
+text.match(/google\.visualization\.Query\.setResponse\((.*)\)/)[1]
+);
+
+const rows = json.table.rows;
+
+let total = 0;
+
+rows.forEach(row => {
+const value = row.c[1]?.v;
+if(value) total += Number(value);
+});
+
+document.getElementById("total").textContent =
+total.toFixed(1) + " kg CO₂";
+
+} catch(e) {
+console.error(e);
+document.getElementById("total").textContent = "โหลดข้อมูลไม่สำเร็จ";
+}
+
+})
+.catch(err => {
+console.error(err);
+document.getElementById("total").textContent = "เชื่อมต่อ Google Sheet ไม่ได้";
+});
+
+</script>
+
+</body>
+</html>
